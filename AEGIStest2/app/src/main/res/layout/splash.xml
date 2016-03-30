@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:weightSum="100">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_weight="40">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingBottom="20dp"
+            android:src="@drawable/aegis_badge_150px" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:weightSum="100"
+        android:layout_weight="60">
+
+
+        <com.github.rahatarmanahmed.cpv.CircularProgressView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/progress_view"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="90"
+            app:cpv_color="#C91A1A"
+            app:cpv_thickness="10dp"
+            app:cpv_animAutostart="true"
+            app:cpv_indeterminate="true"
+            app:cpv_animDuration="5380"
+            app:cpv_animSteps="5"
+            app:cpv_animSyncDuration="700"/>
+
+        <TextView
+            android:id="@+id/status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="10"
+            android:text="Initialise Launch"
+            android:textSize="20dp"/>
+
+    </LinearLayout>
+
+</LinearLayout>
