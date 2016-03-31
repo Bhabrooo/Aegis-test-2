@@ -19,11 +19,14 @@ import android.widget.TextView;
 
 // line chart wali classes hain ye
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.utils.ColorTemplate;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -47,8 +50,8 @@ public class MainActivity extends Activity implements BluetoothAdapter.LeScanCal
     public Vector<Double> acc_z_raw= new Vector<Double>(0);
 
     //ECG and Activity Feature Object
-    public ECG ecg1 =  new ECG();
-    public FeatureCalculator act1= new FeatureCalculator();
+    public ECG ecg1 =  new ECG();     // <------ Object created for processing incoming ECG signal
+    public FeatureCalculator act1= new FeatureCalculator();  // <------ Object created for processing incoming Activity signal
     boolean initial_connect=true; //this is for ecg
     boolean initial_connect_activity=true;  // this is for activity
     boolean call_ecg_functions=false;
@@ -80,6 +83,11 @@ public class MainActivity extends Activity implements BluetoothAdapter.LeScanCal
     private TextView deviceInfoText;
     private TextView Data_received;
     private TextView Features;
+    private TextView BPM_text;
+    private TextView RR_interval_text;
+    private TextView Activity_text;
+    private TextView Temperature_C_text;
+    private TextView Temperature_F_text;
 
     private final BroadcastReceiver bluetoothStateReceiver = new BroadcastReceiver() {
         @Override
@@ -144,16 +152,27 @@ public class MainActivity extends Activity implements BluetoothAdapter.LeScanCal
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         Data_received = (TextView) findViewById(R.id.data_received);
         Features = (TextView) findViewById(R.id.features);
+        BPM_text = (TextView) findViewById(R.id.bpm_tv);
+        RR_interval_text = (TextView) findViewById(R.id.rr_tv);
+        Activity_text = (TextView) findViewById(R.id.activity_tv);
+        Temperature_C_text = (TextView) findViewById(R.id.temp_C_tv);
+        Temperature_F_text = (TextView) findViewById(R.id.temp_F_tv);
 
         //Line Chart Stuff
         line_chart = (LineChart) findViewById(R.id.line_chart);
         line_chart.setDescription("");
         YAxis leftAxis = line_chart.getAxisLeft();
         YAxis rightAxis = line_chart.getAxisRight();
+        XAxis x_axis = line_chart.getXAxis();
+
+        leftAxis.setDrawGridLines(false);
         leftAxis.setAxisMaxValue(1024f);
         leftAxis.setAxisMinValue(0f);
+        rightAxis.setDrawGridLines(false);
         rightAxis.setAxisMaxValue(1024f);
         rightAxis.setAxisMinValue(0f);
+        rightAxis.setShowOnlyMinMax(true);
+        x_axis.setDrawGridLines(false);
         line_chart.setData(SeedData());
         line_chart.animateXY(2000,2000);
         line_chart.setDrawGridBackground(false);
@@ -375,7 +394,7 @@ public class MainActivity extends Activity implements BluetoothAdapter.LeScanCal
             ecg_raw.addElement(value_bluetooth_double[0]);
         }*/
 
-        value_bluetooth_float = HexAsciiHelper.bytestofloat(data);
+        value_bluetooth_float = HexAsciiHelper.bytestofloat(data);   // <--- convert incoming data to float for use in graph
         chart_vec.addElement(value_bluetooth_float[0]);
 
         //when connected for  first time fill complete buffer then call method
@@ -422,7 +441,9 @@ public class MainActivity extends Activity implements BluetoothAdapter.LeScanCal
 
 
 
-        //Threaded process to calculate the R-Peak locations in the ECG object that was created
+        ///////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////
+        // ECG and ACTIVITY FUCNTIONS ARE CALLED HERE
         MainActivity.this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -433,7 +454,9 @@ public class MainActivity extends Activity implements BluetoothAdapter.LeScanCal
                     ecg1.get_RR_BPM(); // <---- This calculates the avg RR interval and BPM from results of r_peaks
                     //ecg1.avg_RR_samp  <---- This 'type double' has the RR interval inters of samples
                     //ecg1.avg_RR_msec  <---- This 'type double' has the RR interval interms of milliseconds
+                    RR_interval_text.setText(String.valueOf((int) ecg1.avg_RR_msec));
                     //ecg1.BPM;         <---- This 'type double' has the Beats per minute and is public
+                    BPM_text.setText(String.valueOf((int) ecg1.BPM));
                     call_ecg_functions = false;
                 }
 
@@ -492,7 +515,8 @@ public class MainActivity extends Activity implements BluetoothAdapter.LeScanCal
         }
     }
 
-    //Chart wala stuff
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    //GRAPH wala stuff
     protected LineData SeedData() {
 
         ArrayList<Entry> entries = new ArrayList<>();
@@ -527,9 +551,6 @@ public class MainActivity extends Activity implements BluetoothAdapter.LeScanCal
                 line_chart_data_set.addEntry(new Entry(chart_buffer.elementAt(i),i));
             }
         }
-        //int random_colour = (int) (Math.random()*5);
-        //line_chart_data_set.setColor(ColorTemplate.VORDIPLOM_COLORS[random_colour]);
-
         line_chart.notifyDataSetChanged();  // notification of update
         line_chart.invalidate(); // refresh graph
     }
